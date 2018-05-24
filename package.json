@@ -1,0 +1,33 @@
+{
+  "name": "nlp-analysis",
+  "version": "0.1.0",
+  "description": "",
+  "preferGlobal": true,
+  "scripts": {
+    "test": "ts-node node_modules/tape/bin/tape src/**/spec.ts",
+    "booya": "build/index.js"
+  },
+  "author": "Luke Whyte",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/cheerio": "^0.22.7",
+    "@types/lodash": "^4.14.109",
+    "@types/natural": "^0.2.33",
+    "@types/node": "^8.0.53",
+    "@types/request-promise": "^4.1.41",
+    "@types/tape": "^4.2.31",
+    "dotenv": "^4.0.0",
+    "tape": "^4.8.0",
+    "ts-node": "^3.3.0",
+    "typescript": "^2.6.1"
+  },
+  "dependencies": {
+    "brain.js": "^1.2.1",
+    "csv": "^3.1.0",
+    "fs": "0.0.1-security",
+    "lodash": "^4.17.10",
+    "natural": "^0.6.0",
+    "request": "^2.87.0",
+    "request-promise": "^4.2.2"
+  }
+}
