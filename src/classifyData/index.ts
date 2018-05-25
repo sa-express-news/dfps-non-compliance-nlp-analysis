@@ -1,6 +1,17 @@
-import { Incident, IncidentWithClassification } from '../interfaces';
+import * as natural from 'natural';
 
-export default (data: Array<Incident>, classifier: any) => data.map((incident: Incident) => {
-	const classification = incident.narrative ? classifier.classify(incident.narrative) : '';
-	return Object.assign({}, incident, { classification });
-});
+import { tokenizeString, getStems, buildBrainInput } from '../trainClassifier';
+
+import { Incident, IncidentWithClassification, Classifier } from '../interfaces';
+
+export default (data: Array<Incident>, classifier: Classifier) => {
+	const tokenizer: any = new natural.WordTokenizer();
+	return data.map((incident: Incident) => {
+		let classification = { abuse: null, nonAbuse: null };
+		if (incident.narrative) {
+			const stems: Array<string> = getStems(tokenizeString(incident.narrative, tokenizer));
+			classification = classifier.net.run(buildBrainInput(stems, classifier.combinedTokens));
+		}
+		return Object.assign({}, incident, { classification });
+	});
+}

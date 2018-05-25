@@ -21,6 +21,37 @@ export interface Incident {
     temporarily_closed: boolean;
 }
 
+export interface ClassificationProbability {
+    abuse: number;
+    nonAbuse: number;
+}
+
 export interface IncidentWithClassification extends Incident {
-    classification: string;
+    classification: ClassificationProbability;
+}
+
+export interface WhereClause {
+    column: string;
+    value: string | number;
+    isEquals: boolean;
+}
+
+export interface TrainingLists {
+    abuse: Array<Array<string>>;
+    nonAbuse: Array<Array<string>>;
+}
+
+export interface TrainingOutput {
+    good?: number;
+    bad?: number;
+}
+
+export interface TrainingTest {
+    input: Array<number>;
+    output: TrainingOutput;
+}
+
+export interface Classifier {
+    net: any;
+    combinedTokens: Set<string>;
 }

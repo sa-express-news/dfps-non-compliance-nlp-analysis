@@ -3,20 +3,20 @@ require('dotenv').config();
 import * as rp from 'request-promise';
 
 // interfaces
-import { Incident } from '../interfaces';
+import { Incident, WhereClause } from '../interfaces';
 
 const apiKey = process.env.DW_API_KEY;
 
-const buildWhereClause = (sheet: string, sqlFilterColumn: string, sqlFilters: Array<string>) => sqlFilters.reduce((clause: string, filter: string, idx: number) => {
-	const operator 	= (idx === 0) ? 'WHERE ' : ' OR ';
-	const operation = `${sheet}.${sqlFilterColumn} = "${filter}"`;
-	return clause += operator + operation;
+export const buildWhereClause = (sheet: string, whereClauseList: Array<WhereClause>) => whereClauseList.reduce((clause: string, hash: WhereClause, idx: number) => {
+	const operator 	= hash.isEquals ? '=' : '!=';
+	const condition = idx === 0 ? 'WHERE' : ' OR';
+	return clause += `${condition} ${sheet}.${hash.column} ${operator} "${hash.value}"`;
 }, '');
 
-const getSQLQuery = (sheet: string, sqlFilterColumn: string, sqlFilters: Array<string>) => encodeURIComponent(`SELECT * FROM ${sheet} ${buildWhereClause(sheet, sqlFilterColumn, sqlFilters)}`);
+export const getSQLQuery = (sheet: string, whereClauseList: Array<WhereClause>) => encodeURIComponent(`SELECT * FROM ${sheet} ${buildWhereClause(sheet, whereClauseList)}`);
 
-const setConfigObj = (dataset: string, sheet: string, sqlFilterColumn: string, sqlFilters: Array<string>) => ({
-	uri: `https://api.data.world/v0/sql/expressnews/${dataset}?query=${getSQLQuery(sheet, sqlFilterColumn, sqlFilters)}`,
+const setConfigObj = (dataset: string, sheet: string, whereClauseList: Array<WhereClause>) => ({
+	uri: `https://api.data.world/v0/sql/expressnews/${dataset}?query=${getSQLQuery(sheet, whereClauseList)}`,
 	headers: {
 		'Authorization': `Bearer ${apiKey}`,
 		'Accept': 'application/json',
@@ -24,8 +24,8 @@ const setConfigObj = (dataset: string, sheet: string, sqlFilterColumn: string, s
 	json: true,
 });
 
-export const getSheet = (dataset: string, sheet: string, sqlFilterColumn: string, sqlFilters: Array<string>) => rp(setConfigObj(dataset, sheet, sqlFilterColumn, sqlFilters))
+export const getSheet = (dataset: string, sheet: string, whereClauseList: Array<WhereClause>) => rp(setConfigObj(dataset, sheet, whereClauseList))
 				.then((res: Array<Incident>) => res)
 				.catch((err: any) => console.error(err));
 
-export default async (dataset: string, sheet: string, sqlFilterColumn: string, sqlFilters: Array<string>) => await getSheet(dataset, sheet, sqlFilterColumn, sqlFilters);
+export default async (dataset: string, sheet: string, whereClauseList: Array<WhereClause>) => await getSheet(dataset, sheet, whereClauseList);
