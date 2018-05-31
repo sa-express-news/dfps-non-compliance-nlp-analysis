@@ -1,23 +1,14 @@
 import * as natural from 'natural';
 import * as brain	from 'brain.js';
 
+import { getStems, tokenizeString, buildBrainInput } from '../brainTrainerTools';
+
 // interfaces
 import { Incident, TrainingLists, TrainingTest } from '../interfaces';
 
 import { abuseTestIDs, nonAbuseTestIDs } from '../testIDs';
 
-export const tokenizeString = (narrative: string, tokenizer: any) => tokenizer.tokenize(narrative);
-
-export const getStems = (words: Array<string>) => words.map((word: string) => natural.PorterStemmer.stem(word));
-
 export const combineTokens = (stems: Array<string>, tokens: Set<string>) => stems.forEach((stem: string) => tokens.add(stem));
-
-export const buildBrainInput = (stems: Array<string>, combinedTokens: Set<string>) => {
-	const stemSet = new Set(stems);
-	return [...combinedTokens].map((token: string) => {
-		return stemSet.has(token) ? 1 : 0;
-	});
-};
 
 export const buildTrainingTest = (stems: Array<string>, combinedTokens: Set<string>, outputType: string) => ({
 	input: buildBrainInput(stems, combinedTokens),
