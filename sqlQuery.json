@@ -1,0 +1,3 @@
+{
+	"query": "SELECT * FROM hhsc_deficency_data AS nc WHERE (nc.programs_provided = 'Child Placing Agency' OR nc.programs_provided = 'Residential Treatment Center' OR nc.programs_provided = 'Multiple Services')"
+}

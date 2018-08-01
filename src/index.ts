@@ -1,5 +1,6 @@
 #! /usr/bin/env node
 
+import parseArguments		from './parseArguments';
 import getData 				from './getData';
 import trainClassifier 		from './trainClassifier';
 import classifyData			from './classifyData';
@@ -8,44 +9,27 @@ import writeToCSVAndPush	from './writeToCSVAndPush';
 // interfaces
 import { Incident, IncidentWithClassification } from './interfaces';
 
-export const sheet 				= 'non_compliance_master';
-export const dataset 			= 'dfps-cpainvestigations-data';
-export const filename			= 'NLP-Non-Compliance-Abuse-Cases';
-
-export const getWhereClauseList	= () => ([
-	{
-		column: 'programs_provided',
-		value: 'Child Placing Agency',
-		isEquals: true,
-	},
-	{
-		column: 'programs_provided',
-		value: 'Residential Treatment Center',
-		isEquals: true,
-	},
-	{
-		column: 'programs_provided',
-		value: 'Multiple Services',
-		isEquals: true,
-	},
-	{
-		column: 'programs_provided',
-		value: 'Couldn\'t find programs',
-		isEquals: true,
-	},
-]);
-
 const run = async () => {
-	const data: any = await getData(dataset, sheet, getWhereClauseList());
-	console.log('loaded!');
+	const parsedArguments = parseArguments(process.argv.slice(2));
 
-	const classifier = trainClassifier(data);
-	console.log('trained!');
+	if (parsedArguments.isSuccessful) {
+		const { dataset, filename } = parsedArguments.payload;
 
-	const result: Array<IncidentWithClassification> = classifyData(data, classifier);
-	console.log('classified!');
+		const data: any = await getData(dataset);
+		console.log('loaded!');
 
-	await writeToCSVAndPush(result, filename, dataset);
-	console.log('Success!');
+		const classifier = await trainClassifier(data);
+		console.log('trained!');
+
+		const result: Array<IncidentWithClassification> = classifyData(data, classifier);
+		console.log('classified!');
+
+		console.log(result.filter(incident => incident.classification === 'abuse'));
+
+		// await writeToCSVAndPush(result, filename, dataset);
+		// console.log('Success!');
+	} else {
+		console.error('Malformed arguments passed to processor');
+	}
 };
 run().catch(err => console.error(err));

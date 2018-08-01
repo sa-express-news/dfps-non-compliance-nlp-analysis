@@ -5,7 +5,7 @@
   "preferGlobal": true,
   "scripts": {
     "test": "ts-node node_modules/tape/bin/tape src/**/spec.ts",
-    "booya": "build/index.js"
+    "analyze": "build/index.js"
   },
   "author": "Luke Whyte",
   "license": "MIT",

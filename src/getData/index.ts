@@ -1,22 +1,23 @@
 require('dotenv').config();
 
 import * as rp from 'request-promise';
+import * as fs from 'fs';
 
 // interfaces
-import { Incident, WhereClause } from '../interfaces';
+import { Incident, SqlQuery } from '../interfaces';
 
 const apiKey = process.env.DW_API_KEY;
 
-export const buildWhereClause = (sheet: string, whereClauseList: Array<WhereClause>) => whereClauseList.reduce((clause: string, hash: WhereClause, idx: number) => {
-	const operator 	= hash.isEquals ? '=' : '!=';
-	const condition = idx === 0 ? 'WHERE' : ' OR';
-	return clause += `${condition} ${sheet}.${hash.column} ${operator} "${hash.value}"`;
-}, '');
+export const getSQLQuery = (): Promise<string> => new Promise((resolve: any, reject: any) => {
+	fs.readFile('./sqlQuery.json', (err: any, raw: any) => {
+		if (err) reject(err);
+		const { query } = JSON.parse(raw)
+		resolve(encodeURIComponent(query));
+	});
+});
 
-export const getSQLQuery = (sheet: string, whereClauseList: Array<WhereClause>) => encodeURIComponent(`SELECT * FROM ${sheet} ${buildWhereClause(sheet, whereClauseList)}`);
-
-const setConfigObj = (dataset: string, sheet: string, whereClauseList: Array<WhereClause>) => ({
-	uri: `https://api.data.world/v0/sql/expressnews/${dataset}?query=${getSQLQuery(sheet, whereClauseList)}`,
+const setConfigObj = (dataset: string, sqlQuery: string) => ({
+	uri: `https://api.data.world/v0/sql/expressnews/${dataset}?query=${sqlQuery}`,
 	headers: {
 		'Authorization': `Bearer ${apiKey}`,
 		'Accept': 'application/json',
@@ -24,8 +25,11 @@ const setConfigObj = (dataset: string, sheet: string, whereClauseList: Array<Whe
 	json: true,
 });
 
-export const getSheet = (dataset: string, sheet: string, whereClauseList: Array<WhereClause>) => rp(setConfigObj(dataset, sheet, whereClauseList))
+export const getSheet = (dataset: string, sqlQuery: string) => rp(setConfigObj(dataset, sqlQuery))
 				.then((res: Array<Incident>) => res)
 				.catch((err: any) => console.error(err));
 
-export default async (dataset: string, sheet: string, whereClauseList: Array<WhereClause>) => await getSheet(dataset, sheet, whereClauseList);
+export default async (dataset: string) => {
+	const sqlQuery: string = await getSQLQuery();
+	return await getSheet(dataset, sqlQuery);
+}
